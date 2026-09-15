@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Drift</string>
+    <string name="app_tagline">Leave the scroll. Enter the night.</string>
+
+    <string name="accessibility_service_label">Drift guard</string>
+    <string name="accessibility_service_description">Lets Drift see which app is in the foreground so it can put apps away as bedtime approaches. It never reads the contents of your screen.</string>
+
+    <string name="channel_status_name">Tonight</string>
+    <string name="channel_status_description">Shows which stage of the night your phone is at, and when it changes.</string>
+
+    <string name="notification_open">Winding down at %1$s</string>
+    <string name="notification_wind_down">Winding down · quiet at %1$s</string>
+    <string name="notification_quiet">Quiet · asleep at %1$s</string>
+    <string name="notification_sleep">Asleep until %1$s · calls only</string>
+    <string name="notification_borrowed">Phone open for %1$d more min</string>
+    <string name="action_end_early">Done early</string>
+
+    <string name="duration_minutes">%1$d min</string>
+    <string name="duration_hours_minutes">%1$dh %2$dm</string>
+
+    <!-- The night screen -->
+    <string name="night_headline_wind_down">Winding down</string>
+    <string name="night_headline_quiet">Quiet hours</string>
+    <string name="night_headline_sleep">Asleep</string>
+    <string name="night_detail_app_wind_down">%1$s is put away for tonight.</string>
+    <string name="night_detail_app_quiet">%1$s is closed until morning.</string>
+    <string name="night_detail_wind_down">The apps you put away are closed for tonight.</string>
+    <string name="night_detail_quiet">Only your essentials and calling are left.</string>
+    <string name="night_detail_sleep">Calling is the only thing left until morning.</string>
+    <string name="night_next_quiet">Quiet hours at %1$s, %2$s from now</string>
+    <string name="night_next_sleep">Asleep at %1$s, %2$s from now</string>
+    <string name="night_next_wake">Yours again at %1$s, %2$s from now</string>
+    <string name="night_button_phone">Phone</string>
+    <string name="night_button_put_down">Put it down</string>
+    <string name="night_button_need_it">I need it</string>
+    <string name="night_uses_many">%1$d openings left tonight</string>
+    <string name="night_uses_one">1 opening left tonight</string>
+    <string name="night_uses_none">No openings left tonight · calling still works</string>
+    <string name="night_uses_unlimited">Openings are unlimited</string>
+    <string name="night_no_dialer">No phone app found on this device.</string>
+    <string name="night_preview_badge">Preview · this is what tonight looks like</string>
+    <string name="night_preview_close">Close preview</string>
+    <string name="preview_no_unlock">This is only a preview, so there is nothing to open.</string>
+
+    <!-- Reaching past the night -->
+    <string name="reason_title">Why do you need it?</string>
+    <string name="reason_work">Work</string>
+    <string name="reason_important">Something important</string>
+    <string name="reason_checking">Just want to check</string>
+    <string name="reason_cancel">Cancel</string>
+
+    <string name="second_thought_title">Sure?</string>
+    <string name="second_thought_first">That is okay. You do not have to decide anything right now.</string>
+    <plurals name="second_thought_with_count">
+        <item quantity="one">You have already opened the phone once tonight.</item>
+        <item quantity="other">You have already opened the phone %1$d times tonight.</item>
+    </plurals>
+    <string name="second_thought_continue">Continue anyway</string>
+    <string name="second_thought_put_down">Put it down</string>
+
+    <string name="hold_title">Open the phone</string>
+    <string name="hold_body">This opens everything for %1$d minutes, then the night picks up where it left off.</string>
+    <string name="hold_note_hint">Anything worth remembering? (optional)</string>
+    <string name="hold_button">Hold to open</string>
+    <string name="hold_holding">Keep holding…</string>
+    <string name="hatch_opened">Open for %1$d minutes</string>
+    <string name="hatch_exhausted">That was all %1$d openings for tonight. Calling still works.</string>
+
+    <!-- Tonight -->
+    <string name="tonight_title">Tonight</string>
+    <string name="tonight_status_off">Drift is off</string>
+    <string name="tonight_status_off_detail">Turn it on and your phone will get quieter as bedtime comes round.</string>
+    <string name="tonight_status_open">Asleep at %1$s</string>
+    <string name="tonight_status_open_detail">Wind-down starts in %1$s.</string>
+    <string name="tonight_status_wind_down">Winding down</string>
+    <string name="tonight_status_wind_down_detail">Quiet hours at %1$s.</string>
+    <string name="tonight_status_quiet">Quiet hours</string>
+    <string name="tonight_status_quiet_detail">Asleep at %1$s.</string>
+    <string name="tonight_status_sleep">Asleep</string>
+    <string name="tonight_status_sleep_detail">Yours again at %1$s.</string>
+    <string name="tonight_status_borrowed">Open for %1$d more min</string>
+    <string name="tonight_status_borrowed_detail">The night picks up again by itself.</string>
+    <string name="tonight_timeline">%1$s wind-down → %2$s quiet → %3$s asleep → %4$s up</string>
+    <string name="tonight_end_borrowed">I am done, lock it back</string>
+
+    <string name="tonight_section_night">Your night</string>
+    <string name="tonight_enabled">Drift</string>
+    <string name="tonight_sleep_at">Asleep by</string>
+    <string name="tonight_wake_at">Up at</string>
+    <string name="tonight_wind_down_lead">Wind-down starts</string>
+    <string name="tonight_quiet_lead">Quiet hours start</string>
+    <string name="tonight_lead_before">before bed</string>
+    <string name="tonight_lead_none">At bedtime</string>
+    <string name="tonight_lead_hours">%1$dh before</string>
+    <string name="tonight_schedule_warning">Pick two different times, otherwise the night never runs.</string>
+
+    <string name="tonight_section_apps">Apps</string>
+    <string name="tonight_put_away">Put away at wind-down</string>
+    <string name="tonight_put_away_empty">Nothing yet — tap to choose</string>
+    <string name="tonight_keep">Keep through quiet hours</string>
+    <string name="tonight_keep_empty">Nothing yet — tap to choose</string>
+    <string name="tonight_app_summary_more">%1$s and %2$d more</string>
+
+    <string name="tonight_section_hatch">If you really need it</string>
+    <string name="tonight_max_uses">Openings a night</string>
+    <string name="tonight_grant">Each opening lasts</string>
+    <string name="tonight_per_night">%1$d a night</string>
+    <string name="tonight_unlimited">Unlimited</string>
+    <string name="tonight_minutes">%1$d min</string>
+    <string name="tonight_block_settings">Close Settings during quiet hours too</string>
+    <string name="tonight_block_settings_hint">Harder to walk around, and harder to switch Drift off. Calling and the openings above work either way.</string>
+
+    <string name="tonight_section_setup">Setup</string>
+    <string name="tonight_preview">Preview tonight</string>
+
+    <string name="tonight_section_history">Lately</string>
+    <string name="tonight_history_empty">No openings yet.</string>
+    <string name="tonight_history_last">Last opening: %1$s</string>
+    <plurals name="tonight_opens_so_far">
+        <item quantity="one">You have opened the phone once tonight.</item>
+        <item quantity="other">You have opened the phone %1$d times tonight.</item>
+    </plurals>
+
+    <!-- Permissions -->
+    <string name="perm_grant">Grant</string>
+    <string name="perm_done">Granted</string>
+    <string name="perm_guard">App guard</string>
+    <string name="perm_guard_hint">Required. Without it Drift cannot put anything away.</string>
+    <string name="perm_overlay">Show over other apps</string>
+    <string name="perm_overlay_hint">Required. Lets the night screen come to the front.</string>
+    <string name="perm_alarms">Exact alarms</string>
+    <string name="perm_alarms_hint">Keeps each stage landing on the minute.</string>
+    <string name="perm_notifications">Notifications</string>
+    <string name="perm_notifications_hint">Shows where the night is, and ends an opening early.</string>
+    <string name="perm_battery">Ignore battery optimisation</string>
+    <string name="perm_battery_hint">Stops the system delaying the wind-down.</string>
+
+    <!-- App picker -->
+    <string name="picker_put_away_title">Put away at wind-down</string>
+    <string name="picker_put_away_subtitle">These close when the wind-down starts and stay closed for the night.</string>
+    <string name="picker_keep_title">Keep through quiet hours</string>
+    <string name="picker_keep_subtitle">These stay open once everything else has gone. Calling is always kept.</string>
+    <string name="picker_suggest">Tick the usual suspects</string>
+    <string name="picker_done">Done</string>
+    <string name="picker_empty">No apps found.</string>
+</resources>

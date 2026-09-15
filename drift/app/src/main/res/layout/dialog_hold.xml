@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="24dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
+
+    <TextView
+        android:id="@+id/body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15sp" />
+
+    <EditText
+        android:id="@+id/note"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:autofillHints=""
+        android:hint="@string/hold_note_hint"
+        android:importantForAutofill="no"
+        android:inputType="textCapSentences|textMultiLine"
+        android:maxLines="3"
+        android:textSize="15sp" />
+
+    <ProgressBar
+        android:id="@+id/holdProgress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="18dp"
+        android:max="1000"
+        android:progress="0" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/holdButton"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="10dp"
+        android:text="@string/hold_button"
+        android:textSize="16sp" />
+</LinearLayout>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Widget.Drift.SectionHeader" parent="">
+        <item name="android:layout_marginTop">28dp</item>
+        <item name="android:layout_marginBottom">4dp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textColor">@color/night_primary</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:letterSpacing">0.08</item>
+    </style>
+
+    <style name="Widget.Drift.Row" parent="">
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingVertical">6dp</item>
+    </style>
+
+    <style name="Widget.Drift.RowLabel" parent="">
+        <item name="android:textColor">@color/night_text</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+</resources>

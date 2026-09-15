@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.Drift" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/night_primary</item>
+        <item name="colorOnPrimary">@color/night_on_primary</item>
+        <item name="android:statusBarColor">@color/night_background</item>
+        <item name="android:navigationBarColor">@color/night_background</item>
+        <item name="android:windowBackground">@color/night_background</item>
+        <item name="android:textColorPrimary">@color/night_text</item>
+        <item name="android:textColorSecondary">@color/night_text_muted</item>
+    </style>
+
+    <!-- The night screen: no bars, and no way out except the buttons on it. -->
+    <style name="Theme.Drift.Night" parent="Theme.Drift">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@color/night_background</item>
+        <item name="android:windowShowWallpaper">false</item>
+    </style>
+</resources>

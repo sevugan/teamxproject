@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/night_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="32dp"
+        android:paddingBottom="40dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tonight_title"
+            android:textAllCaps="true"
+            android:textColor="@color/night_primary"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/statusHeadline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:fontFamily="sans-serif-light"
+            android:textColor="@color/night_text"
+            android:textSize="30sp" />
+
+        <TextView
+            android:id="@+id/statusDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/night_text_muted"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/statusTimeline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/night_primary"
+            android:textSize="13sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/endBorrowedTime"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="14dp"
+            android:text="@string/tonight_end_borrowed"
+            android:visibility="gone"
+            app:cornerRadius="26dp" />
+
+        <TextView
+            android:id="@+id/lastNight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:textColor="@color/night_text_muted"
+            android:textSize="13sp" />
+
+        <!-- Your night -->
+        <TextView
+            style="@style/Widget.Drift.SectionHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tonight_section_night" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/enabledSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="10dp"
+            android:text="@string/tonight_enabled"
+            android:textColor="@color/night_text"
+            android:textSize="16sp" />
+
+        <LinearLayout
+            style="@style/Widget.Drift.Row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                style="@style/Widget.Drift.RowLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/tonight_sleep_at" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/sleepAtButton"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/Widget.Drift.Row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                style="@style/Widget.Drift.RowLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/tonight_wake_at" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/wakeAtButton"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/Widget.Drift.Row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                style="@style/Widget.Drift.RowLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/tonight_wind_down_lead" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/windDownLeadButton"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/Widget.Drift.Row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                style="@style/Widget.Drift.RowLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/tonight_quiet_lead" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/quietLeadButton"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/scheduleWarning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/tonight_schedule_warning"
+            android:textColor="@color/accent"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <!-- Apps -->
+        <TextView
+            style="@style/Widget.Drift.SectionHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tonight_section_apps" />
+
+        <LinearLayout
+            android:id="@+id/putAwayRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:orientation="vertical"
+            android:paddingVertical="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tonight_put_away"
+                android:textColor="@color/night_text"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/putAwaySummary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/night_text_muted"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/keepRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:orientation="vertical"
+            android:paddingVertical="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tonight_keep"
+                android:textColor="@color/night_text"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/keepSummary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/night_text_muted"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- If you really need it -->
+        <TextView
+            style="@style/Widget.Drift.SectionHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tonight_section_hatch" />
+
+        <LinearLayout
+            style="@style/Widget.Drift.Row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                style="@style/Widget.Drift.RowLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/tonight_max_uses" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/maxUsesButton"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/Widget.Drift.Row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                style="@style/Widget.Drift.RowLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/tonight_grant" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/grantMinutesButton"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/blockSettingsSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="10dp"
+            android:text="@string/tonight_block_settings"
+            android:textColor="@color/night_text"
+            android:textSize="16sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tonight_block_settings_hint"
+            android:textColor="@color/night_text_muted"
+            android:textSize="13sp" />
+
+        <!-- Setup -->
+        <TextView
+            style="@style/Widget.Drift.SectionHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tonight_section_setup" />
+
+        <LinearLayout
+            android:id="@+id/permissionList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/previewButton"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="20dp"
+            android:text="@string/tonight_preview"
+            app:cornerRadius="26dp" />
+    </LinearLayout>
+</ScrollView>

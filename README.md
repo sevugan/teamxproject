@@ -1,5 +1,5 @@
 # teamxproject
 
-- **[`nightlock/`](nightlock/)** — Night Lock, an Android app that locks the phone from
-  23:00 to 06:00 with calling still available and an emergency unlock.
+- **[`drift/`](drift/)** — Drift, an Android app that makes the phone gradually less
+  interesting as bedtime approaches and hands it back in the morning.
 - **`project x/`** — robot chassis reference images.

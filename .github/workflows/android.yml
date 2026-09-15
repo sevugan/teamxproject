@@ -1,4 +1,4 @@
-name: Build Night Lock APK
+name: Build Drift APK
 
 on:
   push:
@@ -22,17 +22,17 @@ jobs:
 
       # The curfew and emergency rules are a plain JVM build, so they are checked
       # before anything Android specific is even configured.
-      - name: Test the lock rules
-        working-directory: nightlock
+      - name: Test the night rules
+        working-directory: drift
         run: ./gradlew -p core test
 
       - name: Build debug APK
-        working-directory: nightlock
+        working-directory: drift
         run: ./gradlew :app:assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: night-lock-debug-apk
-          path: nightlock/app/build/outputs/apk/debug/*.apk
+          name: drift-debug-apk
+          path: drift/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error

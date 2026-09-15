@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/night_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:minHeight="400dp"
+        android:orientation="vertical"
+        android:paddingHorizontal="28dp"
+        android:paddingVertical="40dp">
+
+        <TextView
+            android:id="@+id/previewBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:text="@string/night_preview_badge"
+            android:textColor="@color/accent"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-light"
+            android:text="23:00"
+            android:textColor="@color/night_text"
+            android:textSize="64sp" />
+
+        <TextView
+            android:id="@+id/headline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/night_text"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/detail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:textColor="@color/night_text_muted"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/nextStep"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="center"
+            android:textColor="@color/night_primary"
+            android:textSize="14sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/putItDown"
+            android:layout_width="match_parent"
+            android:layout_height="58dp"
+            android:layout_marginTop="28dp"
+            android:text="@string/night_button_put_down"
+            android:textSize="16sp"
+            app:cornerRadius="29dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/openPhone"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="match_parent"
+            android:layout_height="58dp"
+            android:layout_marginTop="10dp"
+            android:text="@string/night_button_phone"
+            android:textSize="16sp"
+            app:cornerRadius="29dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/needIt"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="6dp"
+            android:text="@string/night_button_need_it"
+            android:textColor="@color/accent" />
+
+        <TextView
+            android:id="@+id/usesLeft"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:textColor="@color/night_text_muted"
+            android:textSize="13sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/closePreview"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/night_preview_close"
+            android:visibility="gone" />
+    </LinearLayout>
+</ScrollView>
