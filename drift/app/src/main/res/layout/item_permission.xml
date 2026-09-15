@@ -34,5 +34,5 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:minWidth="0dp"
-        android:text="@string/setup_permission_fix" />
+        android:text="@string/perm_grant" />
 </LinearLayout>
