@@ -97,6 +97,13 @@ AppGuardAccessibility ┘         │           └── status notification
 JDK 17+ and Android SDK 35. Pushing to this branch also builds a debug APK in CI; the
 artifact is on the run page under **Actions**.
 
+`app/debug.keystore` is checked in on purpose. CI runners are ephemeral, so the keystore
+AGP generates by default is a different random key on every build, and Android then
+rejects each APK as an update to the last with *"package conflicts with an existing
+package"*. A shared key makes every build install over the previous one. It is a debug
+key with the well known `android`/`android` password — not a secret, and never to be used
+for a release build.
+
 ## Setting it up on a phone
 
 Install, open Drift, and clear the checklist. Two items are genuinely required:

@@ -15,7 +15,29 @@ android {
         versionName = "1.0.0"
     }
 
+    signingConfigs {
+        // A debug key checked into the repository on purpose.
+        //
+        // CI runners are ephemeral, so the keystore AGP generates by default is a new
+        // random key on every build, and Android then refuses each APK as an update to
+        // the last one: "package conflicts with an existing package". A shared key makes
+        // every build install over the previous one.
+        //
+        // This is a debug key with the well known android/android password. It is not a
+        // secret, it protects nothing, and it must never be used to sign a release.
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
+        }
+
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
