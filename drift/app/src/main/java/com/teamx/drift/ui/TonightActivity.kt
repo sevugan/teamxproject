@@ -12,6 +12,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.teamx.drift.R
+import com.teamx.drift.core.ChangeDecision
+import com.teamx.drift.core.Commitments
 import com.teamx.drift.core.NightPhase
 import com.teamx.drift.core.NightStatus
 import com.teamx.drift.data.DriftSettings
@@ -21,6 +23,7 @@ import com.teamx.drift.night.DriftService
 import com.teamx.drift.night.NightController
 import com.teamx.drift.util.DevicePackages
 import com.teamx.drift.util.Permissions
+import java.time.DayOfWeek
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
@@ -28,6 +31,8 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.time.format.TextStyle
+import java.util.Locale
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -53,33 +58,80 @@ class TonightActivity : AppCompatActivity() {
 
         binding.enabledSwitch.setOnCheckedChangeListener { button, isChecked ->
             if (!button.isPressed) return@setOnCheckedChangeListener
-            settings.enabled = isChecked
-            DriftService.sync(this)
-            render()
+            propose { it.copy(enabled = isChecked) }
         }
 
         binding.sleepAtButton.setOnClickListener {
             pickTime(settings.sleepAt) { picked ->
-                settings.sleepAt = picked
-                afterScheduleChange()
+                propose { it.copy(schedule = it.schedule.copy(sleepAt = picked)) }
             }
         }
 
         binding.wakeAtButton.setOnClickListener {
             pickTime(settings.wakeAt) { picked ->
-                settings.wakeAt = picked
-                afterScheduleChange()
+                propose { it.copy(schedule = it.schedule.copy(wakeAt = picked)) }
             }
         }
 
         binding.windDownLeadButton.setOnClickListener {
-            settings.windDownLeadMinutes = nextIn(LEAD_CYCLE, settings.windDownLeadMinutes)
-            afterScheduleChange()
+            val next = nextIn(LEAD_CYCLE, settings.windDownLeadMinutes).toLong()
+            propose {
+                val lead = Duration.ofMinutes(next)
+                it.copy(
+                    schedule = it.schedule.copy(
+                        windDownLead = lead,
+                        quietLead = minOf(it.schedule.quietLead, lead),
+                    ),
+                )
+            }
         }
 
         binding.quietLeadButton.setOnClickListener {
-            settings.quietLeadMinutes = nextIn(LEAD_CYCLE, settings.quietLeadMinutes)
-            afterScheduleChange()
+            val next = nextIn(LEAD_CYCLE, settings.quietLeadMinutes).toLong()
+            propose {
+                it.copy(
+                    schedule = it.schedule.copy(
+                        quietLead = minOf(Duration.ofMinutes(next), it.schedule.windDownLead),
+                    ),
+                )
+            }
+        }
+
+        binding.limitsRow.setOnClickListener { AppLimitsActivity.open(this) }
+
+        binding.editWindowSwitch.setOnCheckedChangeListener { button, isChecked ->
+            if (!button.isPressed) return@setOnCheckedChangeListener
+            // Turning the window on is a tightening, so it is always allowed. Turning it
+            // off is not a commitment change at all - it is the lock itself - so it is
+            // only permitted while the window is open or an opening is running.
+            if (!isChecked && !canRelax()) {
+                binding.editWindowSwitch.isChecked = true
+                LockedChangeDialog.show(this, blockedNow(listOf(getString(R.string.locked_reason_window))))
+                return@setOnCheckedChangeListener
+            }
+            settings.editWindowEnabled = isChecked
+            render()
+        }
+
+        binding.editWindowFromButton.setOnClickListener {
+            if (!requireRelaxable()) return@setOnClickListener
+            pickTime(settings.editWindowFrom) { picked ->
+                settings.editWindowFrom = picked
+                render()
+            }
+        }
+
+        binding.editWindowToButton.setOnClickListener {
+            if (!requireRelaxable()) return@setOnClickListener
+            pickTime(settings.editWindowTo) { picked ->
+                settings.editWindowTo = picked
+                render()
+            }
+        }
+
+        binding.editWindowDaysButton.setOnClickListener {
+            if (!requireRelaxable()) return@setOnClickListener
+            pickDays()
         }
 
         binding.putAwayRow.setOnClickListener {
@@ -91,19 +143,25 @@ class TonightActivity : AppCompatActivity() {
         }
 
         binding.maxUsesButton.setOnClickListener {
-            settings.maxUsesPerNight = nextMaxUses(settings.maxUsesPerNight)
-            render()
+            val next = nextMaxUses(settings.maxUsesPerNight)
+            propose { it.copy(escapeHatch = it.escapeHatch.copy(maxUsesPerNight = next)) }
         }
 
         binding.grantMinutesButton.setOnClickListener {
-            settings.grantMinutes = nextIn(GRANT_CYCLE, settings.grantMinutes)
-            render()
+            val next = nextIn(GRANT_CYCLE, settings.grantMinutes).toLong()
+            propose {
+                it.copy(escapeHatch = it.escapeHatch.copy(grantDuration = Duration.ofMinutes(next)))
+            }
+        }
+
+        binding.extensionsButton.setOnClickListener {
+            val next = nextIn(EXTENSION_CYCLE, settings.maxExtensionsPerDay)
+            propose { it.copy(limitPolicy = it.limitPolicy.copy(maxExtensionsPerDay = next)) }
         }
 
         binding.blockSettingsSwitch.setOnCheckedChangeListener { button, isChecked ->
             if (!button.isPressed) return@setOnCheckedChangeListener
-            settings.blockSettingsFrom = if (isChecked) NightPhase.QUIET else null
-            NightController.invalidateAccessPolicy()
+            propose { it.copy(blockSettingsFrom = if (isChecked) NightPhase.QUIET else null) }
         }
 
         binding.previewButton.setOnClickListener { NightScreenActivity.preview(this) }
@@ -128,6 +186,57 @@ class TonightActivity : AppCompatActivity() {
         render()
     }
 
+    /**
+     * Applies a change if the guard allows it, and explains itself if not.
+     *
+     * Every setting on this screen goes through here, so the rule is in one place:
+     * tightening always works, loosening needs the window or an opening.
+     */
+    private fun propose(change: (Commitments) -> Commitments) {
+        when (val decision = NightController.proposeChange(this, change)) {
+            is ChangeDecision.Allowed -> {
+                DriftService.sync(this)
+                render()
+            }
+
+            is ChangeDecision.Blocked -> LockedChangeDialog.show(this, decision) { render() }
+        }
+    }
+
+    /** Whether the rules may be relaxed at this moment. */
+    private fun canRelax(): Boolean =
+        NightController.previewChange(this) { it.copy(enabled = !it.enabled) }.isAllowed
+
+    private fun requireRelaxable(): Boolean {
+        if (canRelax()) return true
+        LockedChangeDialog.show(this, blockedNow(listOf(getString(R.string.locked_reason_window))))
+        return false
+    }
+
+    private fun blockedNow(reasons: List<String>) = ChangeDecision.Blocked(
+        loosenings = reasons,
+        opensAt = settings.editWindow.opensAfter(java.time.LocalDateTime.now()),
+        canUseEscapeHatch = (NightController.usesLeftTonight(this) ?: 1) > 0,
+    )
+
+    private fun pickDays() {
+        val all = DayOfWeek.entries.toTypedArray()
+        val selected = settings.editWindowDays
+        val checked = all.map { it in selected }.toBooleanArray()
+        val labels = all.map { it.getDisplayName(TextStyle.FULL, Locale.getDefault()) }
+            .toTypedArray()
+
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle(R.string.tonight_window_days)
+            .setMultiChoiceItems(labels, checked) { _, which, isChecked -> checked[which] = isChecked }
+            .setPositiveButton(R.string.picker_done) { _, _ ->
+                settings.editWindowDays = all.filterIndexed { index, _ -> checked[index] }.toSet()
+                render()
+            }
+            .setNegativeButton(R.string.reason_cancel, null)
+            .show()
+    }
+
     private fun afterScheduleChange() {
         DriftService.sync(this)
         render()
@@ -148,10 +257,62 @@ class TonightActivity : AppCompatActivity() {
             getString(R.string.tonight_minutes, settings.grantMinutes)
         binding.blockSettingsSwitch.isChecked = settings.blockSettingsFrom != null
 
+        binding.extensionsButton.text = when (val count = settings.maxExtensionsPerDay) {
+            0 -> getString(R.string.tonight_extensions_none)
+            else -> getString(R.string.tonight_extensions, count, settings.extensionMinutes)
+        }
+
         renderAppLists()
+        renderLimits()
+        renderEditWindow()
         renderStatus(NightController.refresh(this))
         renderPermissions()
         renderLastNight()
+    }
+
+    private fun renderLimits() {
+        val limited = settings.appLimits.limitedPackages
+        binding.limitsSummary.text = if (limited.isEmpty()) {
+            getString(R.string.tonight_limits_empty)
+        } else {
+            val names = limited.take(3).map { DevicePackages.label(this, it) }.sorted()
+            val rest = limited.size - names.size
+            if (rest > 0) {
+                getString(R.string.tonight_app_summary_more, names.joinToString(", "), rest)
+            } else {
+                names.joinToString(", ")
+            }
+        }
+        binding.limitsNeedsUsage.isVisible =
+            limited.isNotEmpty() && !Permissions.hasUsageAccess(this)
+    }
+
+    private fun renderEditWindow() {
+        val window = settings.editWindow
+        binding.editWindowSwitch.isChecked = window.enabled
+        binding.editWindowFromButton.text = window.from.format(TIME_FORMAT)
+        binding.editWindowToButton.text = window.to.format(TIME_FORMAT)
+        binding.editWindowDaysButton.text = daysLabel(window.days)
+        binding.editWindowRows.isVisible = window.enabled
+        binding.editWindowWarning.isVisible = window.enabled && window.isUnusable
+        binding.editWindowState.isVisible = window.enabled && !window.isUnusable
+        binding.editWindowState.setText(
+            if (canRelax()) R.string.tonight_window_open_now else R.string.tonight_window_closed_now,
+        )
+    }
+
+    private fun daysLabel(days: Set<DayOfWeek>): String = when {
+        days.isEmpty() -> getString(R.string.tonight_window_no_days)
+        days == EditWindowDays.EVERY -> getString(R.string.tonight_window_every_day)
+        days == EditWindowDays.WEEKDAYS -> getString(R.string.tonight_window_weekdays)
+        else -> days.sorted().joinToString(", ") {
+            it.getDisplayName(TextStyle.SHORT, Locale.getDefault())
+        }
+    }
+
+    private object EditWindowDays {
+        val EVERY: Set<DayOfWeek> = DayOfWeek.entries.toSet()
+        val WEEKDAYS: Set<DayOfWeek> = com.teamx.drift.core.EditWindow.WEEKDAYS
     }
 
     private fun renderAppLists() {
@@ -298,6 +459,12 @@ class TonightActivity : AppCompatActivity() {
         }
 
         addPermissionRow(
+            R.string.perm_usage,
+            R.string.perm_usage_hint,
+            Permissions.hasUsageAccess(this),
+        ) { Permissions.openUsageAccessSettings(this) }
+
+        addPermissionRow(
             R.string.perm_battery,
             R.string.perm_battery_hint,
             Permissions.isIgnoringBatteryOptimizations(this),
@@ -358,5 +525,6 @@ class TonightActivity : AppCompatActivity() {
             DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
         val LEAD_CYCLE = listOf(0, 15, 30, 45, 60, 90, 120)
         val GRANT_CYCLE = listOf(5, 10, 15, 30, 60)
+        val EXTENSION_CYCLE = listOf(0, 1, 2, 3, 5)
     }
 }

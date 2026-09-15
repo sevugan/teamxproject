@@ -220,6 +220,146 @@
                 android:textSize="13sp" />
         </LinearLayout>
 
+
+        <LinearLayout
+            android:id="@+id/limitsRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:orientation="vertical"
+            android:paddingVertical="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tonight_limits"
+                android:textColor="@color/night_text"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/limitsSummary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/night_text_muted"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/limitsNeedsUsage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tonight_limits_needs_usage"
+                android:textColor="@color/accent"
+                android:textSize="13sp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- When the rules may be relaxed -->
+        <TextView
+            style="@style/Widget.Drift.SectionHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tonight_section_window" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/editWindowSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="10dp"
+            android:text="@string/tonight_window_enabled"
+            android:textColor="@color/night_text"
+            android:textSize="16sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tonight_window_hint"
+            android:textColor="@color/night_text_muted"
+            android:textSize="13sp" />
+
+        <LinearLayout
+            android:id="@+id/editWindowRows"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                style="@style/Widget.Drift.Row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    style="@style/Widget.Drift.RowLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/tonight_window_from" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/editWindowFromButton"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/Widget.Drift.Row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    style="@style/Widget.Drift.RowLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/tonight_window_to" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/editWindowToButton"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/Widget.Drift.Row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    style="@style/Widget.Drift.RowLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/tonight_window_days" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/editWindowDaysButton"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/editWindowState"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/night_primary"
+                android:textSize="13sp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/editWindowWarning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/tonight_window_unusable"
+                android:textColor="@color/accent"
+                android:textSize="13sp"
+                android:visibility="gone" />
+        </LinearLayout>
+
         <!-- If you really need it -->
         <TextView
             style="@style/Widget.Drift.SectionHeader"
@@ -260,6 +400,26 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/grantMinutesButton"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            style="@style/Widget.Drift.Row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                style="@style/Widget.Drift.RowLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/tonight_extensions_label" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/extensionsButton"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />

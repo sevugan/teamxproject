@@ -144,4 +144,53 @@
     <string name="picker_suggest">Tick the usual suspects</string>
     <string name="picker_done">Done</string>
     <string name="picker_empty">No apps found.</string>
+
+    <!-- Daily app limits -->
+    <string name="tonight_limits">Daily app limits</string>
+    <string name="tonight_limits_empty">No limits yet — tap to set some</string>
+    <string name="tonight_limits_needs_usage">Needs usage access to count time. See Setup below.</string>
+    <string name="tonight_extensions_label">Extensions a day</string>
+    <string name="tonight_extensions">%1$d × %2$d min</string>
+    <string name="tonight_extensions_none">None — limits are final</string>
+
+    <string name="limits_title">Daily app limits</string>
+    <string name="limits_subtitle">When an app runs out of time it gets closed. The day resets when you wake up.</string>
+    <string name="limits_none">No limit</string>
+    <string name="limits_used_today">%1$d of %2$d min used today</string>
+    <string name="limits_window_note">Limits can only be raised between %1$s and %2$s.</string>
+
+    <string name="time_up_headline">%1$s is done for today</string>
+    <string name="time_up_detail">%1$s had %2$s today. It will open again tomorrow.</string>
+    <string name="time_up_detail_plain">%1$s is out of time for today.</string>
+    <string name="time_up_done">OK</string>
+    <string name="time_up_extend">Give it %1$d more minutes</string>
+    <string name="time_up_extended">%1$d more minutes</string>
+    <string name="time_up_extensions_left">%1$d extensions left today</string>
+    <string name="time_up_one_extension">1 extension left today</string>
+    <string name="time_up_no_extensions">No extensions left today</string>
+
+    <!-- When the rules may be relaxed -->
+    <string name="tonight_section_window">When rules can change</string>
+    <string name="tonight_window_enabled">Only change rules in working hours</string>
+    <string name="tonight_window_hint">You can always make a rule stricter. Relaxing one — a later bedtime, a longer limit, turning Drift off — waits for this window, or costs an opening.</string>
+    <string name="tonight_window_from">From</string>
+    <string name="tonight_window_to">Until</string>
+    <string name="tonight_window_days">Days</string>
+    <string name="tonight_window_every_day">Every day</string>
+    <string name="tonight_window_weekdays">Weekdays</string>
+    <string name="tonight_window_no_days">No days — nothing is locked</string>
+    <string name="tonight_window_open_now">Open now — rules can be relaxed.</string>
+    <string name="tonight_window_closed_now">Closed now — rules can only be made stricter.</string>
+    <string name="tonight_window_unusable">These hours do not make a window, so nothing is locked.</string>
+
+    <string name="locked_title">Not right now</string>
+    <string name="locked_body">That would relax:</string>
+    <string name="locked_opens_at">You can change it from %1$s.</string>
+    <string name="locked_or_opening">Or open the phone from the night screen and change it then.</string>
+    <string name="locked_no_openings">No openings left tonight either. It waits for the morning.</string>
+    <string name="locked_reason_window">the window that protects your rules</string>
+    <string name="locked_ok">Fine</string>
+
+    <string name="perm_usage">Usage access</string>
+    <string name="perm_usage_hint">Required for daily app limits. Lets Drift count screen time per app.</string>
 </resources>

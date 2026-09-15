@@ -2,13 +2,19 @@ package com.teamx.drift.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.teamx.drift.core.AppLimits
+import com.teamx.drift.core.Commitments
 import com.teamx.drift.core.DriftConfig
+import com.teamx.drift.core.EditWindow
 import com.teamx.drift.core.EscapeHatchPolicy
+import com.teamx.drift.core.LimitExtensions
+import com.teamx.drift.core.LimitPolicy
 import com.teamx.drift.core.EscapeHatchRecord
 import com.teamx.drift.core.EscapeHatchState
 import com.teamx.drift.core.NightPhase
 import com.teamx.drift.core.NightSchedule
 import com.teamx.drift.core.UnlockReason
+import java.time.DayOfWeek
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -119,6 +125,106 @@ class DriftSettings private constructor(context: Context) {
         get() = prefs.getBoolean(KEY_SET_UP, false)
         set(value) = write { putBoolean(KEY_SET_UP, value) }
 
+    // ---- daily app limits ----------------------------------------------------
+
+    var appLimits: AppLimits
+        get() = AppLimits(readMinutes(KEY_APP_LIMITS))
+        set(value) = write { putString(KEY_APP_LIMITS, writeMinutes(value.perApp)) }
+
+    var maxExtensionsPerDay: Int
+        get() = prefs.getInt(KEY_MAX_EXTENSIONS, DEFAULT_MAX_EXTENSIONS)
+        set(value) = write { putInt(KEY_MAX_EXTENSIONS, value.coerceIn(0, 10)) }
+
+    var extensionMinutes: Int
+        get() = prefs.getInt(KEY_EXTENSION_MINUTES, DEFAULT_EXTENSION_MINUTES)
+        set(value) = write { putInt(KEY_EXTENSION_MINUTES, value.coerceIn(1, 60)) }
+
+    val limitPolicy: LimitPolicy
+        get() = LimitPolicy(
+            maxExtensionsPerDay = maxExtensionsPerDay,
+            extensionLength = Duration.ofMinutes(extensionMinutes.toLong()),
+        )
+
+    /** Minutes borrowed against today's limits. Resets with the usage day. */
+    var limitExtensions: LimitExtensions
+        get() {
+            val day = prefs.getLong(KEY_EXT_DAY, NO_VALUE)
+            return LimitExtensions(
+                dayId = day.takeIf { it != NO_VALUE }?.let(LocalDate::ofEpochDay),
+                timesUsed = readCounts(KEY_EXT_TIMES),
+                extraTime = readMinutes(KEY_EXT_EXTRA),
+            )
+        }
+        set(value) = write {
+            putLong(KEY_EXT_DAY, value.dayId?.toEpochDay() ?: NO_VALUE)
+            putString(KEY_EXT_TIMES, writeCounts(value.timesUsed))
+            putString(KEY_EXT_EXTRA, writeMinutes(value.extraTime))
+        }
+
+    // ---- when the rules may be relaxed ----------------------------------------
+
+    var editWindowEnabled: Boolean
+        get() = prefs.getBoolean(KEY_WINDOW_ENABLED, false)
+        set(value) = write { putBoolean(KEY_WINDOW_ENABLED, value) }
+
+    var editWindowFrom: LocalTime
+        get() = minutesToTime(prefs.getInt(KEY_WINDOW_FROM, DEFAULT_WINDOW_FROM))
+        set(value) = write { putInt(KEY_WINDOW_FROM, value.toMinuteOfDay()) }
+
+    var editWindowTo: LocalTime
+        get() = minutesToTime(prefs.getInt(KEY_WINDOW_TO, DEFAULT_WINDOW_TO))
+        set(value) = write { putInt(KEY_WINDOW_TO, value.toMinuteOfDay()) }
+
+    var editWindowDays: Set<DayOfWeek>
+        get() = prefs.getStringSet(KEY_WINDOW_DAYS, null)
+            ?.mapNotNull { name -> DayOfWeek.entries.firstOrNull { it.name == name } }
+            ?.toSet()
+            ?: EditWindow.WEEKDAYS
+        set(value) = write { putStringSet(KEY_WINDOW_DAYS, value.map { it.name }.toSet()) }
+
+    val editWindow: EditWindow
+        get() = EditWindow(
+            from = editWindowFrom,
+            to = editWindowTo,
+            days = editWindowDays,
+            enabled = editWindowEnabled,
+        )
+
+    // ---- the promise, as one comparable value ---------------------------------
+
+    /**
+     * Everything the user has committed to. Read before a change and compared with what
+     * the change would produce, so [com.teamx.drift.core.ChangeGuard] can judge the whole
+     * edit rather than the screen it came from.
+     */
+    var commitments: Commitments
+        get() = Commitments(
+            enabled = enabled,
+            schedule = schedule,
+            limits = appLimits,
+            limitPolicy = limitPolicy,
+            distracting = distractingPackages,
+            essential = essentialPackages,
+            escapeHatch = escapeHatchPolicy,
+            blockSettingsFrom = blockSettingsFrom,
+        )
+        set(value) {
+            enabled = value.enabled
+            sleepAt = value.schedule.sleepAt
+            wakeAt = value.schedule.wakeAt
+            windDownLeadMinutes = value.schedule.windDownLead.toMinutes().toInt()
+            quietLeadMinutes = value.schedule.quietLead.toMinutes().toInt()
+            appLimits = value.limits
+            maxExtensionsPerDay = value.limitPolicy.maxExtensionsPerDay
+            extensionMinutes = value.limitPolicy.extensionLength.toMinutes().toInt()
+            distractingPackages = value.distracting
+            essentialPackages = value.essential
+            maxUsesPerNight = value.escapeHatch.maxUsesPerNight
+            grantMinutes = value.escapeHatch.grantDuration.toMinutes().toInt()
+            holdSeconds = value.escapeHatch.holdToConfirm.seconds.toInt()
+            blockSettingsFrom = value.blockSettingsFrom
+        }
+
     // ---- the composed configuration -------------------------------------------
 
     val config: DriftConfig
@@ -192,6 +298,30 @@ class DriftSettings private constructor(context: Context) {
         put("phase", phase.name)
     }
 
+    private fun readMinutes(key: String): Map<String, Duration> = runCatching {
+        val raw = prefs.getString(key, null) ?: return emptyMap()
+        val json = JSONObject(raw)
+        json.keys().asSequence().associateWith { Duration.ofMinutes(json.getLong(it)) }
+    }.getOrDefault(emptyMap())
+
+    private fun writeMinutes(values: Map<String, Duration>): String {
+        val json = JSONObject()
+        values.forEach { (key, duration) -> json.put(key, duration.toMinutes()) }
+        return json.toString()
+    }
+
+    private fun readCounts(key: String): Map<String, Int> = runCatching {
+        val raw = prefs.getString(key, null) ?: return emptyMap()
+        val json = JSONObject(raw)
+        json.keys().asSequence().associateWith { json.getInt(it) }
+    }.getOrDefault(emptyMap())
+
+    private fun writeCounts(values: Map<String, Int>): String {
+        val json = JSONObject()
+        values.forEach { (key, count) -> json.put(key, count) }
+        return json.toString()
+    }
+
     private inline fun write(block: SharedPreferences.Editor.() -> Unit) {
         val editor = prefs.edit()
         editor.block()
@@ -223,6 +353,16 @@ class DriftSettings private constructor(context: Context) {
         private const val KEY_USES_TONIGHT = "hatch_uses"
         private const val KEY_OPEN_UNTIL = "hatch_open_until"
         private const val KEY_HISTORY = "hatch_history"
+        private const val KEY_APP_LIMITS = "app_limits"
+        private const val KEY_MAX_EXTENSIONS = "max_extensions"
+        private const val KEY_EXTENSION_MINUTES = "extension_minutes"
+        private const val KEY_EXT_DAY = "ext_day"
+        private const val KEY_EXT_TIMES = "ext_times"
+        private const val KEY_EXT_EXTRA = "ext_extra"
+        private const val KEY_WINDOW_ENABLED = "window_enabled"
+        private const val KEY_WINDOW_FROM = "window_from"
+        private const val KEY_WINDOW_TO = "window_to"
+        private const val KEY_WINDOW_DAYS = "window_days"
 
         private const val NO_VALUE = -1L
         private const val UNLIMITED = -1
@@ -236,6 +376,10 @@ class DriftSettings private constructor(context: Context) {
         private const val DEFAULT_MAX_USES = 3
         private const val DEFAULT_GRANT_MINUTES = 15
         private const val DEFAULT_HOLD_SECONDS = 5
+        private const val DEFAULT_MAX_EXTENSIONS = 2
+        private const val DEFAULT_EXTENSION_MINUTES = 5
+        private const val DEFAULT_WINDOW_FROM = 9 * 60
+        private const val DEFAULT_WINDOW_TO = 18 * 60
 
         @Volatile
         private var instance: DriftSettings? = null

@@ -12,6 +12,10 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <!-- Fallback route to the night screen when a background activity start is refused. -->
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <!-- Measures how long each app has been on screen today. Granted by hand in Settings. -->
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
 
     <!-- Used to work out which apps are calling, clocks and home screens. -->
     <queries>
@@ -61,6 +65,20 @@
             android:name=".ui.AppPickerActivity"
             android:exported="false"
             android:parentActivityName=".ui.TonightActivity" />
+
+        <activity
+            android:name=".ui.AppLimitsActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.TonightActivity" />
+
+        <!-- Shares the night screen's own task: both are things that appear over an app. -->
+        <activity
+            android:name=".ui.TimeUpActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:taskAffinity="com.teamx.drift.night"
+            android:theme="@style/Theme.Drift.Night" />
 
         <!--
           The night screen lives in its own task so that dismissing it from Recents does

@@ -69,6 +69,16 @@ object Permissions {
         )
     }
 
+    /** Needed to measure how long each app has been on screen today. */
+    fun hasUsageAccess(context: Context): Boolean = UsageTracker.hasPermission(context)
+
+    fun openUsageAccessSettings(context: Context) {
+        context.startActivity(
+            Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+        )
+    }
+
     fun hasNotificationPermission(context: Context): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return true
         return ContextCompat.checkSelfPermission(

@@ -2,14 +2,22 @@ package com.teamx.drift.night
 
 import android.content.Context
 import com.teamx.drift.core.AppAccessPolicy
+import com.teamx.drift.core.AppLimitEvaluator
+import com.teamx.drift.core.ChangeDecision
+import com.teamx.drift.core.ChangeGuard
+import com.teamx.drift.core.Commitments
 import com.teamx.drift.core.EscapeHatchDecision
 import com.teamx.drift.core.EscapeHatchRecord
+import com.teamx.drift.core.LimitVerdict
 import com.teamx.drift.core.NightEvaluator
 import com.teamx.drift.core.NightPhase
+import com.teamx.drift.core.UsageDay
 import com.teamx.drift.core.NightStatus
 import com.teamx.drift.core.UnlockReason
 import com.teamx.drift.data.DriftSettings
 import com.teamx.drift.util.DevicePackages
+import com.teamx.drift.util.UsageTracker
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -161,4 +169,106 @@ object NightController {
 
     /** The phase a blocked app was blocked by, for the night screen's copy. */
     fun enforcedPhase(): NightPhase = _status.value.enforced
+
+    // ---- daily app limits -----------------------------------------------------
+
+    /** The day limits are counted against: starts when you wake, not at midnight. */
+    fun usageDayId(context: Context): LocalDate =
+        UsageDay.idOf(LocalDateTime.now(), DriftSettings.getInstance(context).wakeAt)
+
+    private fun usageDayStart(context: Context): LocalDateTime =
+        UsageDay.startOf(LocalDateTime.now(), DriftSettings.getInstance(context).wakeAt)
+
+    /** How long [packageName] has been on screen since the day began. */
+    fun usedToday(context: Context, packageName: String): Duration =
+        UsageTracker.usageOf(context, packageName, usageDayStart(context))
+
+    /** Where [packageName] stands against its limit right now. */
+    fun limitVerdict(context: Context, packageName: String): LimitVerdict {
+        val settings = DriftSettings.getInstance(context)
+        if (!settings.appLimits.isLimited(packageName)) return LimitVerdict.Untimed
+        return AppLimitEvaluator.verdict(
+            packageName = packageName,
+            usedToday = usedToday(context, packageName),
+            limits = settings.appLimits,
+            extensions = settings.limitExtensions,
+            policy = settings.limitPolicy,
+            dayId = usageDayId(context),
+        )
+    }
+
+    /**
+     * Whether a limit should close [packageName] right now.
+     *
+     * An open escape hatch suspends limits as well as the night: one way past, not two.
+     */
+    fun isOutOfTime(context: Context, packageName: String?): Boolean {
+        if (packageName.isNullOrBlank()) return false
+        if (_status.value.isBorrowingTime) return false
+        return limitVerdict(context, packageName).closesTheApp
+    }
+
+    /** Borrows one extension for [packageName]. Returns false when the cap is reached. */
+    fun extendLimit(context: Context, packageName: String): Boolean {
+        val settings = DriftSettings.getInstance(context)
+        val dayId = usageDayId(context)
+        val before = settings.limitExtensions
+        val after = settings.limitPolicy.extend(before, packageName, dayId)
+        if (after == before) return false
+        settings.limitExtensions = after
+        return true
+    }
+
+    fun extensionsLeft(context: Context, packageName: String): Int {
+        val settings = DriftSettings.getInstance(context)
+        return settings.limitPolicy.extensionsLeft(
+            settings.limitExtensions,
+            packageName,
+            usageDayId(context),
+        )
+    }
+
+    // ---- changing the rules ---------------------------------------------------
+
+    /**
+     * Applies a change to the commitments, if it is allowed to happen now.
+     *
+     * Tightening always goes through. Loosening needs the edit window to be open, or an
+     * escape hatch opening already running. Nothing is written when the answer is no.
+     */
+    fun proposeChange(context: Context, change: (Commitments) -> Commitments): ChangeDecision {
+        val settings = DriftSettings.getInstance(context)
+        val before = settings.commitments
+        val after = change(before)
+
+        val decision = ChangeGuard.evaluate(
+            from = before,
+            to = after,
+            window = settings.editWindow,
+            now = LocalDateTime.now(),
+            escapeHatchOpen = _status.value.isBorrowingTime,
+            escapeHatchAvailable = usesLeftTonight(context)?.let { it > 0 } ?: true,
+        )
+
+        if (decision.isAllowed) {
+            settings.commitments = after
+            invalidateAccessPolicy()
+            refresh(context)
+        }
+        return decision
+    }
+
+    /** What a change would be judged as, without applying it. */
+    fun previewChange(context: Context, change: (Commitments) -> Commitments): ChangeDecision {
+        val settings = DriftSettings.getInstance(context)
+        val before = settings.commitments
+        return ChangeGuard.evaluate(
+            from = before,
+            to = change(before),
+            window = settings.editWindow,
+            now = LocalDateTime.now(),
+            escapeHatchOpen = _status.value.isBorrowingTime,
+            escapeHatchAvailable = usesLeftTonight(context)?.let { it > 0 } ?: true,
+        )
+    }
 }

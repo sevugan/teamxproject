@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.teamx.drift.R
 import com.teamx.drift.core.AppAccessPolicy
+import com.teamx.drift.core.ChangeDecision
 import com.teamx.drift.data.DriftSettings
 import com.teamx.drift.databinding.ActivityAppPickerBinding
 import com.teamx.drift.databinding.ItemAppChoiceBinding
@@ -73,12 +74,18 @@ class AppPickerActivity : AppCompatActivity() {
     }
 
     private fun save() {
-        when (list) {
-            List.PUT_AWAY -> settings.distractingPackages = selected.toSet()
-            List.KEEP -> settings.essentialPackages = selected.toSet()
+        val decision = NightController.proposeChange(this) { commitments ->
+            when (list) {
+                List.PUT_AWAY -> commitments.copy(distracting = selected.toSet())
+                List.KEEP -> commitments.copy(essential = selected.toSet())
+            }
         }
-        NightController.invalidateAccessPolicy()
-        finish()
+        when (decision) {
+            is ChangeDecision.Allowed -> finish()
+            // Taking an app off the list, or adding one to the essentials, relaxes the
+            // night - so it waits for working hours like any other loosening.
+            is ChangeDecision.Blocked -> LockedChangeDialog.show(this, decision)
+        }
     }
 
     private inner class Adapter(
