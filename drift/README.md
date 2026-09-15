@@ -111,6 +111,30 @@ Then pick your apps. **Tick the usual suspects** fills the put-away list with th
 ones that are actually installed on the phone. **Preview tonight** shows the night screen
 at any hour without waiting for one.
 
+## On OnePlus, OPPO, realme, Xiaomi, vivo and Samsung
+
+These ROMs add their own background-process killing on top of Android's, and granting
+*Ignore battery optimisation* is not enough on its own. Drift shows a warning on the
+setup screen when it detects one of them. On OxygenOS and ColorOS specifically:
+
+1. **Settings → Apps → Drift → Battery usage → Allow background activity**, and allow
+   **Auto-launch** if the ROM offers it. Without this the service is killed and the night
+   never starts.
+2. **Lock Drift in Recents** — open Recents, pull down on the Drift card (or its menu) and
+   pick the padlock, so clearing recents does not close it.
+3. **Settings → Battery → Sleep standby optimisation → off**, which otherwise defers
+   alarms overnight, which is precisely when Drift needs them.
+
+Sideloading on these phones also runs into **Auto Blocker / Auto block apps** (turn it
+off in the security app while installing), and Play Protect's Enhanced Fraud Protection,
+which blocks any sideloaded app that requests the accessibility permission in some
+regions. Turn off *Scan apps with Play Protect* in the Play Store during install.
+
+The essentials kit resolves each role through the standard "default app for X" intent
+first, and falls back to known vendor package names for the ROMs that do not answer it.
+If a row on **Kept all night** says nothing on the phone fills a role that clearly
+exists, that fallback list needs the package name for that device.
+
 ## What this is not
 
 - **A commitment device, not a security control.** Anyone who can reach Settings can turn

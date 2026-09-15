@@ -212,4 +212,7 @@
     <string name="role_calendar">Calendar</string>
     <string name="role_music">Music</string>
     <string name="role_files">Files</string>
+
+    <string name="vendor_hint">%1$s phones stop background apps on their own, past the setting above. Open Drift\'s app info and allow background activity and auto-launch, or the night may simply not start.</string>
+    <string name="vendor_hint_open">Open Drift\'s app info</string>
 </resources>

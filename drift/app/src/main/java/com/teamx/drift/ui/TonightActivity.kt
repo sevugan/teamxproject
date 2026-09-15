@@ -166,6 +166,8 @@ class TonightActivity : AppCompatActivity() {
             propose { it.copy(blockSettingsFrom = if (isChecked) NightPhase.QUIET else null) }
         }
 
+        binding.vendorHintButton.setOnClickListener { Permissions.openAppDetails(this) }
+
         binding.previewButton.setOnClickListener { NightScreenActivity.preview(this) }
 
         binding.endBorrowedTime.setOnClickListener {
@@ -482,6 +484,17 @@ class TonightActivity : AppCompatActivity() {
             R.string.perm_battery_hint,
             Permissions.isIgnoringBatteryOptimizations(this),
         ) { Permissions.openBatteryOptimizationSettings(this) }
+
+        renderVendorHint()
+    }
+
+    private fun renderVendorHint() {
+        val needed = Permissions.needsVendorBackgroundSetup()
+        binding.vendorHint.isVisible = needed
+        binding.vendorHintButton.isVisible = needed
+        if (needed) {
+            binding.vendorHint.text = getString(R.string.vendor_hint, android.os.Build.MANUFACTURER)
+        }
     }
 
     private fun addPermissionRow(titleRes: Int, hintRes: Int, granted: Boolean, onFix: () -> Unit) {

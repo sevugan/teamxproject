@@ -87,6 +87,32 @@ object Permissions {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
+    /**
+     * ROMs that kill background services regardless of the standard battery setting.
+     *
+     * ColorOS and OxygenOS (OnePlus), MIUI, One UI and Funtouch all add their own layer
+     * on top of Android's, and on those phones granting "ignore battery optimisation" is
+     * not enough on its own: the app also has to be allowed to auto-launch and run in the
+     * background from the manufacturer's own screens.
+     */
+    fun needsVendorBackgroundSetup(): Boolean =
+        Build.MANUFACTURER.lowercase() in AGGRESSIVE_VENDORS
+
+    private val AGGRESSIVE_VENDORS = setOf(
+        "oneplus", "oppo", "realme", "xiaomi", "redmi", "poco",
+        "vivo", "iqoo", "huawei", "honor", "samsung", "meizu", "asus",
+    )
+
+    /** The app's own settings page, where those vendor toggles live. */
+    fun openAppDetails(context: Context) {
+        context.startActivity(
+            Intent(
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.parse("package:${context.packageName}"),
+            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+        )
+    }
+
     /** Battery optimisation can delay the 23:00 alarm on some devices. */
     fun isIgnoringBatteryOptimizations(context: Context): Boolean {
         val powerManager = context.getSystemService(PowerManager::class.java) ?: return false

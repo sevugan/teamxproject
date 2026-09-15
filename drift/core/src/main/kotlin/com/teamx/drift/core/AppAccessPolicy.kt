@@ -108,6 +108,13 @@ data class AppAccessPolicy(
             "com.android.settings",
             "com.samsung.android.settings",
             "com.miui.securitycenter",
+            // ColorOS and OxygenOS, which is what OnePlus ships.
+            "com.oplus.settings",
+            "com.coloros.settings",
+            "com.oneplus.settings",
+            "com.oplus.safecenter",
+            "com.coloros.safecenter",
+            "com.oplus.securitypermission",
         )
 
         /**

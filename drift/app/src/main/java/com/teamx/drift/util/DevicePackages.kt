@@ -115,14 +115,83 @@ object DevicePackages {
 
     /** Every package filling any of [roles]. */
     fun kit(context: Context, roles: Set<EssentialRole>): Set<String> =
-        roles.flatMapTo(mutableSetOf()) { forRole(context, it) }
+        roles.flatMapTo(mutableSetOf()) { filledBy(context, it) }
+
+    /**
+     * What fills a role, with vendor fallbacks for the ROMs that do not answer the
+     * standard question.
+     *
+     * ColorOS and OxygenOS (OnePlus), One UI and MIUI all ship their own clock,
+     * calculator and files apps, and several of them never declare the CATEGORY_APP_*
+     * intent that [forRole] asks about. Falling back to known package names keeps the kit
+     * useful there; only packages actually installed are ever included, so a name that is
+     * wrong or out of date simply does nothing.
+     */
+    fun filledBy(context: Context, role: EssentialRole): Set<String> {
+        val resolved = forRole(context, role)
+        if (resolved.isNotEmpty()) return resolved
+        return VENDOR_FALLBACKS[role].orEmpty().filterTo(mutableSetOf()) { isInstalled(context, it) }
+    }
+
+    private fun isInstalled(context: Context, packageName: String): Boolean = runCatching {
+        context.packageManager.getApplicationInfo(packageName, 0)
+    }.isSuccess
+
+    /**
+     * Best effort, not authority. Each ROM renames these between versions, which is why
+     * the intent query above is tried first and this is only a backstop.
+     */
+    private val VENDOR_FALLBACKS: Map<EssentialRole, Set<String>> = mapOf(
+        EssentialRole.MESSAGES to setOf(
+            "com.google.android.apps.messaging",
+            "com.oplus.mms", "com.coloros.mms", "com.android.mms",
+            "com.samsung.android.messaging",
+        ),
+        EssentialRole.CONTACTS to setOf(
+            "com.google.android.contacts", "com.android.contacts",
+            "com.oplus.contacts", "com.coloros.contacts",
+            "com.samsung.android.app.contacts",
+        ),
+        EssentialRole.CLOCK to setOf(
+            "com.google.android.deskclock", "com.android.deskclock",
+            "com.oplus.alarmclock", "com.coloros.alarmclock", "com.oneplus.deskclock",
+            "com.sec.android.app.clockpackage",
+        ),
+        EssentialRole.CALCULATOR to setOf(
+            "com.google.android.calculator", "com.android.calculator2",
+            "com.oplus.calculator", "com.coloros.calculator", "com.oneplus.calculator",
+            "com.sec.android.app.popupcalculator",
+        ),
+        EssentialRole.CAMERA to setOf(
+            "com.google.android.GoogleCamera", "com.android.camera2",
+            "com.oplus.camera", "com.oneplus.camera",
+            "com.sec.android.app.camera",
+        ),
+        EssentialRole.FILES to setOf(
+            "com.google.android.documentsui", "com.android.documentsui",
+            "com.oplus.filemanager", "com.coloros.filemanager", "com.oneplus.filemanager",
+            "com.sec.android.app.myfiles",
+        ),
+        EssentialRole.CALENDAR to setOf(
+            "com.google.android.calendar", "com.android.calendar",
+            "com.oplus.calendar", "com.coloros.calendar",
+        ),
+        EssentialRole.MUSIC to setOf(
+            "com.google.android.apps.youtube.music", "com.android.music",
+            "com.oplus.music", "com.coloros.music", "com.oneplus.music",
+        ),
+        EssentialRole.EMAIL to setOf(
+            "com.google.android.gm", "com.android.email",
+            "com.oplus.email", "com.coloros.email",
+        ),
+    )
 
     /**
      * A readable name for what fills a role, for the picker: "Messages", "Clock".
      * Null when nothing on this phone answers for it.
      */
     fun labelForRole(context: Context, role: EssentialRole): String? {
-        val best = forRole(context, role).firstOrNull { packageName ->
+        val best = filledBy(context, role).firstOrNull { packageName ->
             runCatching { context.packageManager.getApplicationInfo(packageName, 0) }.isSuccess
         } ?: return null
         return label(context, best)
