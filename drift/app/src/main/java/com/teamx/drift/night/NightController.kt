@@ -151,6 +151,7 @@ object NightController {
         val policy = AppAccessPolicy(
             selfPackage = context.packageName,
             callPackages = DevicePackages.call(context),
+            essentialKit = DevicePackages.kit(context, settings.essentialRoles),
             clockPackages = DevicePackages.clock(context),
             launcherPackages = DevicePackages.launchers(context),
             distractingPackages = settings.distractingPackages,

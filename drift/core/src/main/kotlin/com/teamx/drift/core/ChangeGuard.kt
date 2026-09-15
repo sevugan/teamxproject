@@ -66,6 +66,7 @@ data class Commitments(
     val limitPolicy: LimitPolicy = LimitPolicy(),
     val distracting: Set<String> = emptySet(),
     val essential: Set<String> = emptySet(),
+    val essentialRoles: Set<EssentialRole> = EssentialRole.SUPER_SAVER,
     val escapeHatch: EscapeHatchPolicy = EscapeHatchPolicy(),
     val blockSettingsFrom: NightPhase? = null,
 ) {
@@ -115,6 +116,9 @@ data class Commitments(
         // Apps taken off the put-away list, or added to what survives quiet hours.
         (distracting - other.distracting).forEach { reasons += "keeping $it at night" }
         (other.essential - essential).forEach { reasons += "keeping $it in quiet hours" }
+        (other.essentialRoles - essentialRoles).forEach {
+            reasons += "keeping ${it.name.lowercase()} all night"
+        }
 
         // A more forgiving escape hatch.
         if (isMoreGenerous(escapeHatch.maxUsesPerNight, other.escapeHatch.maxUsesPerNight)) {

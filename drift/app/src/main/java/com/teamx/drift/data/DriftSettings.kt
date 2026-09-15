@@ -6,6 +6,7 @@ import com.teamx.drift.core.AppLimits
 import com.teamx.drift.core.Commitments
 import com.teamx.drift.core.DriftConfig
 import com.teamx.drift.core.EditWindow
+import com.teamx.drift.core.EssentialRole
 import com.teamx.drift.core.EscapeHatchPolicy
 import com.teamx.drift.core.LimitExtensions
 import com.teamx.drift.core.LimitPolicy
@@ -114,6 +115,19 @@ class DriftSettings private constructor(context: Context) {
         get() = prefs.getStringSet(KEY_ESSENTIAL, emptySet()).orEmpty()
         set(value) = write { putStringSet(KEY_ESSENTIAL, value) }
 
+    /**
+     * The roles kept reachable all night: the essentials kit.
+     *
+     * Defaults to the super saver set, so a quiet phone is usable out of the box rather
+     * than only after somebody hand-picks a list.
+     */
+    var essentialRoles: Set<EssentialRole>
+        get() = prefs.getStringSet(KEY_ESSENTIAL_ROLES, null)
+            ?.mapNotNull { name -> EssentialRole.entries.firstOrNull { it.name == name } }
+            ?.toSet()
+            ?: EssentialRole.SUPER_SAVER
+        set(value) = write { putStringSet(KEY_ESSENTIAL_ROLES, value.map { it.name }.toSet()) }
+
     /** Null means Settings is never closed. */
     var blockSettingsFrom: NightPhase?
         get() = prefs.getString(KEY_BLOCK_SETTINGS_FROM, null)
@@ -205,6 +219,7 @@ class DriftSettings private constructor(context: Context) {
             limitPolicy = limitPolicy,
             distracting = distractingPackages,
             essential = essentialPackages,
+            essentialRoles = essentialRoles,
             escapeHatch = escapeHatchPolicy,
             blockSettingsFrom = blockSettingsFrom,
         )
@@ -219,6 +234,7 @@ class DriftSettings private constructor(context: Context) {
             extensionMinutes = value.limitPolicy.extensionLength.toMinutes().toInt()
             distractingPackages = value.distracting
             essentialPackages = value.essential
+            essentialRoles = value.essentialRoles
             maxUsesPerNight = value.escapeHatch.maxUsesPerNight
             grantMinutes = value.escapeHatch.grantDuration.toMinutes().toInt()
             holdSeconds = value.escapeHatch.holdToConfirm.seconds.toInt()
@@ -347,6 +363,7 @@ class DriftSettings private constructor(context: Context) {
         private const val KEY_HOLD_SECONDS = "hold_seconds"
         private const val KEY_DISTRACTING = "distracting_packages"
         private const val KEY_ESSENTIAL = "essential_packages"
+        private const val KEY_ESSENTIAL_ROLES = "essential_roles"
         private const val KEY_BLOCK_SETTINGS_FROM = "block_settings_from"
         private const val KEY_SET_UP = "has_been_set_up"
         private const val KEY_NIGHT_ID = "hatch_night_id"

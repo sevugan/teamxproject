@@ -1,6 +1,7 @@
 package com.teamx.drift.core
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -126,5 +127,86 @@ class AppAccessPolicyTest {
         assertTrue(policy.isAllowed("com.example.notes", NightPhase.WIND_DOWN))
         assertFalse(policy.isAllowed("com.example.notes", NightPhase.QUIET))
         assertFalse(policy.isAllowed("com.example.notes", NightPhase.SLEEP))
+    }
+}
+
+class EssentialKitTest {
+
+    private val instagram = "com.instagram.android"
+    private val messages = "com.google.android.apps.messaging"
+    private val calculator = "com.google.android.calculator"
+
+    private val policy = AppAccessPolicy(
+        selfPackage = "com.teamx.drift",
+        callPackages = setOf("com.google.android.dialer"),
+        essentialKit = setOf(messages, calculator, "com.google.android.contacts"),
+        clockPackages = setOf("com.google.android.deskclock"),
+        distractingPackages = setOf(instagram),
+        launcherPackages = setOf("com.google.android.apps.nexuslauncher"),
+    )
+
+    @Test
+    fun `the kit survives every stage of the night`() {
+        NightPhase.entries.forEach { phase ->
+            assertTrue(policy.isAllowed(messages, phase), "messages in $phase")
+            assertTrue(policy.isAllowed(calculator, phase), "calculator in $phase")
+            assertTrue(policy.isAllowed("com.google.android.contacts", phase), "contacts in $phase")
+        }
+    }
+
+    @Test
+    fun `the kit is what makes a quiet phone usable`() {
+        // Without a kit, quiet hours with no hand-picked essentials leave almost nothing.
+        val bare = policy.copy(essentialKit = emptySet())
+
+        assertTrue(bare.isBlocked(messages, NightPhase.QUIET))
+        assertTrue(policy.isAllowed(messages, NightPhase.QUIET))
+    }
+
+    @Test
+    fun `being in the kit does not rescue an app you put away`() {
+        // If someone puts their messaging app on the distracting list, that is a
+        // deliberate choice and it wins.
+        val conflicted = policy.copy(distractingPackages = setOf(messages))
+
+        assertTrue(conflicted.isBlocked(messages, NightPhase.WIND_DOWN))
+        assertTrue(conflicted.isBlocked(messages, NightPhase.SLEEP))
+    }
+
+    @Test
+    fun `an empty kit changes nothing else`() {
+        val bare = policy.copy(essentialKit = emptySet())
+
+        assertTrue(bare.isAllowed("com.google.android.dialer", NightPhase.SLEEP))
+        assertTrue(bare.isAllowed("com.google.android.deskclock", NightPhase.SLEEP))
+        assertTrue(bare.isBlocked(instagram, NightPhase.WIND_DOWN))
+    }
+
+    @Test
+    fun `the default kit is the super saver set`() {
+        assertEquals(
+            setOf(
+                EssentialRole.PHONE,
+                EssentialRole.MESSAGES,
+                EssentialRole.CONTACTS,
+                EssentialRole.CLOCK,
+                EssentialRole.CALCULATOR,
+            ),
+            EssentialRole.SUPER_SAVER,
+        )
+        // Doorways back into the phone are offered, but not on by default.
+        assertFalse(EssentialRole.CAMERA in EssentialRole.SUPER_SAVER)
+        assertFalse(EssentialRole.MAPS in EssentialRole.SUPER_SAVER)
+        assertFalse(EssentialRole.EMAIL in EssentialRole.SUPER_SAVER)
+    }
+
+    @Test
+    fun `adding a role to the kit is a loosening, removing one is not`() {
+        val base = Commitments(essentialRoles = EssentialRole.SUPER_SAVER)
+        val wider = base.copy(essentialRoles = EssentialRole.SUPER_SAVER + EssentialRole.MAPS)
+        val narrower = base.copy(essentialRoles = setOf(EssentialRole.PHONE))
+
+        assertEquals(listOf("keeping maps all night"), base.loosenings(wider))
+        assertTrue(base.loosenings(narrower).isEmpty())
     }
 }

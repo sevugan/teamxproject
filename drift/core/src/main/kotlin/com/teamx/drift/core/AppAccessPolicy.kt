@@ -9,8 +9,8 @@ package com.teamx.drift.core
  * |-------------|--------------------------------------------------------|
  * | `OPEN`      | everything                                             |
  * | `WIND_DOWN` | everything except the apps you named as distracting    |
- * | `QUIET`     | your essentials, plus calling                          |
- * | `SLEEP`     | calling, alarms and the clock                          |
+ * | `QUIET`     | the essentials kit, your own additions, and calling     |
+ * | `SLEEP`     | the essentials kit and calling                         |
  *
  * Calling is never closed, in any phase. A phone that cannot be used to call for help
  * at 03:00 is a worse problem than any amount of scrolling.
@@ -20,6 +20,13 @@ data class AppAccessPolicy(
     val selfPackage: String,
     /** Dialer, telecom and in-call UI packages, resolved on the device at runtime. */
     val callPackages: Set<String>,
+    /**
+     * The essentials kit: whichever apps fill the [EssentialRole]s the user kept.
+     *
+     * Reachable at every stage of the night, like calling. This is the set that makes a
+     * quiet phone still a usable one — the same idea as a super power saving mode.
+     */
+    val essentialKit: Set<String> = emptySet(),
     /** Clock and alarm apps, so the phone still works as a bedside clock. */
     val clockPackages: Set<String> = emptySet(),
     /**
@@ -54,6 +61,9 @@ data class AppAccessPolicy(
         if (packageName == selfPackage) return true
         if (packageName in callPackages) return true
         if (packageName in systemPackages) return true
+        // The kit keeps a quiet phone usable, but naming an app as distracting is a
+        // deliberate choice and beats being essential by default.
+        if (packageName in essentialKit && packageName !in distractingPackages) return true
         if (packageName in inputMethodPackages) return true
 
         if (packageName in settingsPackages) {

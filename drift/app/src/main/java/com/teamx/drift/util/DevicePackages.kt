@@ -6,8 +6,12 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.AlarmClock
+import android.provider.ContactsContract
+import android.provider.MediaStore
+import android.provider.Telephony
 import android.telecom.TelecomManager
 import android.view.inputmethod.InputMethodManager
+import com.teamx.drift.core.EssentialRole
 
 /** One installed app, as the picker shows it. */
 data class InstalledApp(
@@ -60,6 +64,72 @@ object DevicePackages {
         packages += setOf("com.google.android.deskclock", "com.android.deskclock")
         return packages
     }
+
+    /**
+     * The app that fills one role on this device.
+     *
+     * Android has no way to read a manufacturer's super power saving allowlist — it is
+     * vendor private on every ROM that has one. What it does publish is the standard
+     * intent for "the default app for X", which is how those lists are built in the first
+     * place, so asking the same questions gets the same answers for this phone.
+     */
+    fun forRole(context: Context, role: EssentialRole): Set<String> = when (role) {
+        EssentialRole.PHONE -> call(context)
+
+        EssentialRole.MESSAGES -> buildSet {
+            runCatching { Telephony.Sms.getDefaultSmsPackage(context) }.getOrNull()?.let(::add)
+            addAll(appCategory(context, Intent.CATEGORY_APP_MESSAGING))
+            addAll(resolveAll(context, Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:"))))
+        }
+
+        EssentialRole.CONTACTS -> buildSet {
+            addAll(appCategory(context, Intent.CATEGORY_APP_CONTACTS))
+            addAll(
+                resolveAll(
+                    context,
+                    Intent(Intent.ACTION_VIEW, ContactsContract.Contacts.CONTENT_URI),
+                ),
+            )
+        }
+
+        EssentialRole.CLOCK -> clock(context)
+
+        EssentialRole.CALCULATOR -> appCategory(context, Intent.CATEGORY_APP_CALCULATOR)
+
+        EssentialRole.CAMERA -> resolveAll(
+            context,
+            Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA),
+        )
+
+        EssentialRole.EMAIL -> appCategory(context, Intent.CATEGORY_APP_EMAIL)
+
+        EssentialRole.MAPS -> appCategory(context, Intent.CATEGORY_APP_MAPS)
+
+        EssentialRole.CALENDAR -> appCategory(context, Intent.CATEGORY_APP_CALENDAR)
+
+        EssentialRole.MUSIC -> appCategory(context, Intent.CATEGORY_APP_MUSIC)
+
+        // Intent.CATEGORY_APP_FILES is API 29; the constant itself is just this string.
+        EssentialRole.FILES -> appCategory(context, "android.intent.category.APP_FILES")
+    }
+
+    /** Every package filling any of [roles]. */
+    fun kit(context: Context, roles: Set<EssentialRole>): Set<String> =
+        roles.flatMapTo(mutableSetOf()) { forRole(context, it) }
+
+    /**
+     * A readable name for what fills a role, for the picker: "Messages", "Clock".
+     * Null when nothing on this phone answers for it.
+     */
+    fun labelForRole(context: Context, role: EssentialRole): String? {
+        val best = forRole(context, role).firstOrNull { packageName ->
+            runCatching { context.packageManager.getApplicationInfo(packageName, 0) }.isSuccess
+        } ?: return null
+        return label(context, best)
+    }
+
+    private fun appCategory(context: Context, category: String): Set<String> =
+        resolveAll(context, Intent(Intent.ACTION_MAIN).addCategory(category))
 
     fun launchers(context: Context): Set<String> =
         resolveAll(context, Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME))

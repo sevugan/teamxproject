@@ -134,6 +134,8 @@ class TonightActivity : AppCompatActivity() {
             pickDays()
         }
 
+        binding.essentialsRow.setOnClickListener { EssentialsActivity.open(this) }
+
         binding.putAwayRow.setOnClickListener {
             AppPickerActivity.open(this, AppPickerActivity.List.PUT_AWAY)
         }
@@ -316,6 +318,17 @@ class TonightActivity : AppCompatActivity() {
     }
 
     private fun renderAppLists() {
+        val roles = settings.essentialRoles
+        binding.essentialsSummary.text = if (roles.isEmpty()) {
+            getString(R.string.tonight_essentials_hint)
+        } else {
+            roles.sortedBy { it.ordinal }
+                .mapNotNull { DevicePackages.labelForRole(this, it) }
+                .distinct()
+                .joinToString(", ")
+                .ifBlank { getString(R.string.tonight_essentials_hint) }
+        }
+
         binding.putAwaySummary.text = summarise(settings.distractingPackages, R.string.tonight_put_away_empty)
         binding.keepSummary.text = summarise(settings.essentialPackages, R.string.tonight_keep_empty)
     }

@@ -193,4 +193,23 @@
 
     <string name="perm_usage">Usage access</string>
     <string name="perm_usage_hint">Required for daily app limits. Lets Drift count screen time per app.</string>
+
+    <!-- The essentials kit -->
+    <string name="tonight_essentials">Kept all night</string>
+    <string name="tonight_essentials_hint">The apps a super power saving mode would leave you.</string>
+    <string name="essentials_title">Kept all night</string>
+    <string name="essentials_subtitle">What the phone keeps once it has stopped being entertaining. Calling is always kept.</string>
+    <string name="essentials_reset">Back to the usual set</string>
+    <string name="role_nothing_installed">Nothing on this phone does this</string>
+    <string name="role_phone">Phone</string>
+    <string name="role_messages">Messages</string>
+    <string name="role_contacts">Contacts</string>
+    <string name="role_clock">Clock and alarms</string>
+    <string name="role_calculator">Calculator</string>
+    <string name="role_camera">Camera</string>
+    <string name="role_email">Email</string>
+    <string name="role_maps">Maps</string>
+    <string name="role_calendar">Calendar</string>
+    <string name="role_music">Music</string>
+    <string name="role_files">Files</string>
 </resources>
