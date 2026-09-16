@@ -3,6 +3,10 @@ plugins {
     alias(libs.plugins.kotlin.android)
 }
 
+// CI's run number becomes the version, so every build is a higher versionCode than the
+// last and Android — and Obtainium — treat it as an update. Local builds stay at 1.
+val buildNumber = (System.getenv("GITHUB_RUN_NUMBER") ?: "1").toIntOrNull() ?: 1
+
 android {
     namespace = "com.teamx.drift"
     compileSdk = 35
@@ -11,8 +15,8 @@ android {
         applicationId = "com.teamx.drift"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = buildNumber
+        versionName = "1.0.$buildNumber"
     }
 
     signingConfigs {

@@ -104,6 +104,20 @@ package"*. A shared key makes every build install over the previous one. It is a
 key with the well known `android`/`android` password — not a secret, and never to be used
 for a release build.
 
+## Installing, and getting updates
+
+Every build publishes a [release](https://github.com/sevugan/teamxproject/releases) with
+the APK attached, so nothing needs unzipping on the phone.
+
+**Once, with [Obtainium](https://github.com/ImranR98/Obtainium):** Add App →
+`https://github.com/sevugan/teamxproject` → Add. Obtainium then notices each new release
+and installs it in place. This is the least annoying way to live with a sideloaded app.
+
+**Or by hand:** open the latest release on the phone and tap the `.apk`.
+
+Either way the version is `1.0.<CI run number>`, so the version always climbs and every
+build installs over the last one.
+
 ## Setting it up on a phone
 
 Install, open Drift, and clear the checklist. Two items are genuinely required:
