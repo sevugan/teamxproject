@@ -132,6 +132,22 @@ Then pick your apps. **Tick the usual suspects** fills the put-away list with th
 ones that are actually installed on the phone. **Preview tonight** shows the night screen
 at any hour without waiting for one.
 
+## When Drift is not working, it says so
+
+Two silent failures used to look exactly like a healthy app, and both cost a whole night
+before anyone noticed:
+
+- **No permissions.** Tonight would show a confident "Asleep at 23:00" while holding
+  neither the accessibility permission nor the overlay one, and therefore enforcing
+  nothing. It now says *Drift is not running*, names which of the two is missing, and
+  offers the button that grants it. The ongoing notification says it too.
+- **Killed by the phone.** The service leaves a heartbeat on every tick. When it comes
+  back it compares timestamps, and a gap longer than five minutes is reported as an
+  outage: when it started, when it ended, and how much of your night fell inside it.
+  A force-stopped app cannot record anything on its way out, so the gap is only ever
+  visible from the other side — but that is enough to tell you the night did not happen,
+  and that the phone stopped Drift rather than Drift stopping itself.
+
 ## On OnePlus, OPPO, realme, Xiaomi, vivo and Samsung
 
 These ROMs add their own background-process killing on top of Android's, and granting

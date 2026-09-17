@@ -215,4 +215,20 @@
 
     <string name="vendor_hint">%1$s phones stop background apps on their own, past the setting above. Open Drift\'s app info and allow background activity and auto-launch, or the night may simply not start.</string>
     <string name="vendor_hint_open">Open Drift\'s app info</string>
+
+    <!-- Saying so when Drift is not actually working -->
+    <string name="notification_not_running">Not running · setup is incomplete</string>
+    <string name="health_not_running">Drift is not running</string>
+    <string name="health_missing_both">App guard and Show over other apps are both missing, so nothing is being put away. The night will not start.</string>
+    <string name="health_missing_guard">App guard is missing, so Drift cannot see which app is open. Nothing will be put away.</string>
+    <string name="health_missing_overlay">Show over other apps is missing, so the night screen cannot appear.</string>
+    <string name="health_fix_guard">Grant App guard</string>
+    <string name="health_fix_overlay">Grant Show over other apps</string>
+    <string name="health_restricted_hint">If the switch is greyed out as a restricted setting: Settings → Apps → Drift → ⋮ → Allow restricted settings.</string>
+    <string name="health_outage_title">Drift was stopped</string>
+    <string name="health_outage">Nothing ran between %1$s and %2$s — %3$s. Your phone stopped Drift; it did not stop itself.</string>
+    <string name="health_outage_cost">That covered %1$s of your night.</string>
+    <string name="health_outage_harmless">No part of your night fell inside it.</string>
+    <string name="health_outage_dismiss">Got it</string>
+    <string name="health_status_off">Nothing is being enforced.</string>
 </resources>

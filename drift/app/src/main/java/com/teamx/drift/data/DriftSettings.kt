@@ -14,6 +14,7 @@ import com.teamx.drift.core.EscapeHatchRecord
 import com.teamx.drift.core.EscapeHatchState
 import com.teamx.drift.core.NightPhase
 import com.teamx.drift.core.NightSchedule
+import com.teamx.drift.core.Outage
 import com.teamx.drift.core.UnlockReason
 import java.time.DayOfWeek
 import java.time.Duration
@@ -268,6 +269,39 @@ class DriftSettings private constructor(context: Context) {
             putLong(KEY_OPEN_UNTIL, value.openUntil?.toEpochMilli() ?: NO_VALUE)
         }
 
+    // ---- proof of life --------------------------------------------------------
+
+    /**
+     * When the service last ticked.
+     *
+     * Written quietly: it changes every half minute and nothing observes it reactively,
+     * so bumping the revision would throw away the cached app allowlist each time.
+     */
+    var lastHeartbeat: Instant?
+        get() = prefs.getLong(KEY_HEARTBEAT, NO_VALUE).takeIf { it != NO_VALUE }
+            ?.let(Instant::ofEpochMilli)
+        set(value) = writeQuietly {
+            putLong(KEY_HEARTBEAT, value?.toEpochMilli() ?: NO_VALUE)
+        }
+
+    /** The last stretch during which Drift was not running, if one has been noticed. */
+    var lastOutage: Outage?
+        get() {
+            val from = prefs.getLong(KEY_OUTAGE_FROM, NO_VALUE)
+            val to = prefs.getLong(KEY_OUTAGE_TO, NO_VALUE)
+            if (from == NO_VALUE || to == NO_VALUE || to < from) return null
+            return Outage(Instant.ofEpochMilli(from), Instant.ofEpochMilli(to))
+        }
+        set(value) = writeQuietly {
+            putLong(KEY_OUTAGE_FROM, value?.from?.toEpochMilli() ?: NO_VALUE)
+            putLong(KEY_OUTAGE_TO, value?.to?.toEpochMilli() ?: NO_VALUE)
+        }
+
+    /** True once the user has seen and dismissed the outage above. */
+    var lastOutageSeen: Boolean
+        get() = prefs.getBoolean(KEY_OUTAGE_SEEN, true)
+        set(value) = writeQuietly { putBoolean(KEY_OUTAGE_SEEN, value) }
+
     // ---- the record -----------------------------------------------------------
 
     /** Most recent first, capped so it cannot grow without bound. */
@@ -338,6 +372,13 @@ class DriftSettings private constructor(context: Context) {
         return json.toString()
     }
 
+    /** A write nothing observes: does not bump the revision or invalidate caches. */
+    private inline fun writeQuietly(block: SharedPreferences.Editor.() -> Unit) {
+        val editor = prefs.edit()
+        editor.block()
+        editor.apply()
+    }
+
     private inline fun write(block: SharedPreferences.Editor.() -> Unit) {
         val editor = prefs.edit()
         editor.block()
@@ -370,6 +411,10 @@ class DriftSettings private constructor(context: Context) {
         private const val KEY_USES_TONIGHT = "hatch_uses"
         private const val KEY_OPEN_UNTIL = "hatch_open_until"
         private const val KEY_HISTORY = "hatch_history"
+        private const val KEY_HEARTBEAT = "last_heartbeat"
+        private const val KEY_OUTAGE_FROM = "outage_from"
+        private const val KEY_OUTAGE_TO = "outage_to"
+        private const val KEY_OUTAGE_SEEN = "outage_seen"
         private const val KEY_APP_LIMITS = "app_limits"
         private const val KEY_MAX_EXTENSIONS = "max_extensions"
         private const val KEY_EXTENSION_MINUTES = "extension_minutes"

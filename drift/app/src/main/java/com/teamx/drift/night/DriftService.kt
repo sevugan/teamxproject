@@ -17,8 +17,10 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.teamx.drift.DriftApp
 import com.teamx.drift.R
+import com.teamx.drift.core.HeartbeatMonitor
 import com.teamx.drift.core.NightPhase
 import com.teamx.drift.core.NightStatus
+import com.teamx.drift.data.DriftSettings
 import com.teamx.drift.ui.NightScreenActivity
 import com.teamx.drift.ui.TonightActivity
 import com.teamx.drift.util.Permissions
@@ -88,6 +90,7 @@ class DriftService : Service() {
 
     @SuppressLint("MissingPermission")
     private fun syncNow() {
+        recordHeartbeat()
         val status = NightController.refresh(this)
 
         if (status.scheduleOff) {
@@ -119,6 +122,28 @@ class DriftService : Service() {
         }
     }
 
+    /**
+     * Leaves a timestamp, and notices if the last one is stale.
+     *
+     * A phone that force-stops the app gives no chance to record anything on the way
+     * out, so the gap is only ever visible from the other side — the next time the
+     * service runs. That is enough to tell the user their night did not happen.
+     */
+    private fun recordHeartbeat() {
+        val settings = DriftSettings.getInstance(this)
+        val now = Instant.now()
+
+        val outage = HeartbeatMonitor.outageSince(settings.lastHeartbeat, now)
+        // Only worth reporting when Drift was supposed to be doing something. Being
+        // stopped while switched off is not a failure.
+        if (outage != null && settings.enabled) {
+            settings.lastOutage = outage
+            settings.lastOutageSeen = false
+        }
+
+        settings.lastHeartbeat = now
+    }
+
     private fun buildNotification(status: NightStatus): Notification {
         val builder = NotificationCompat.Builder(this, DriftApp.CHANNEL_STATUS)
             .setSmallIcon(R.drawable.ic_drift)
@@ -137,6 +162,13 @@ class DriftService : Service() {
             )
 
         val changesAt = status.changesAt?.format(TIME_FORMAT)
+
+        // Nothing below is true if the app cannot act. Say that first.
+        if (!Permissions.isOperational(this)) {
+            return builder
+                .setContentText(getString(R.string.notification_not_running))
+                .build()
+        }
 
         when {
             status.isBorrowingTime -> {

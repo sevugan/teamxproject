@@ -69,6 +69,16 @@ object Permissions {
         )
     }
 
+    /**
+     * Whether Drift can do its job at all.
+     *
+     * Without the guard it cannot see which app is in the foreground; without the overlay
+     * it cannot put a screen in front of one. Missing either means the app is inert, and
+     * it should say so rather than showing a confident schedule it is not enforcing.
+     */
+    fun isOperational(context: Context): Boolean =
+        isAccessibilityServiceEnabled(context) && canDrawOverlays(context)
+
     /** Needed to measure how long each app has been on screen today. */
     fun hasUsageAccess(context: Context): Boolean = UsageTracker.hasPermission(context)
 

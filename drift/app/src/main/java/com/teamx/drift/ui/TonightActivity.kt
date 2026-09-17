@@ -16,6 +16,8 @@ import com.teamx.drift.core.ChangeDecision
 import com.teamx.drift.core.Commitments
 import com.teamx.drift.core.NightPhase
 import com.teamx.drift.core.NightStatus
+import com.teamx.drift.core.Outage
+import com.teamx.drift.core.OutageImpact
 import com.teamx.drift.data.DriftSettings
 import com.teamx.drift.databinding.ActivityTonightBinding
 import com.teamx.drift.databinding.ItemPermissionBinding
@@ -28,6 +30,7 @@ import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZonedDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -266,6 +269,7 @@ class TonightActivity : AppCompatActivity() {
             else -> getString(R.string.tonight_extensions, count, settings.extensionMinutes)
         }
 
+        renderHealth()
         renderAppLists()
         renderLimits()
         renderEditWindow()
@@ -346,8 +350,101 @@ class TonightActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Says when Drift is not actually doing anything.
+     *
+     * The app used to show a confident "Asleep at 23:00" while holding no permissions at
+     * all, which is worse than useless: it looks like it is working. Two things get said
+     * here instead — that it cannot act, and that it stopped acting.
+     */
+    private fun renderHealth() {
+        val guard = Permissions.isAccessibilityServiceEnabled(this)
+        val overlay = Permissions.canDrawOverlays(this)
+        val outage = settings.lastOutage
+
+        when {
+            // Switched off on purpose is not a fault.
+            !settings.enabled -> binding.healthBanner.isVisible = false
+
+            !guard || !overlay -> {
+                binding.healthBanner.isVisible = true
+                binding.healthTitle.setText(R.string.health_not_running)
+                binding.healthDetail.text = buildString {
+                    append(
+                        getString(
+                            when {
+                                !guard && !overlay -> R.string.health_missing_both
+                                !guard -> R.string.health_missing_guard
+                                else -> R.string.health_missing_overlay
+                            },
+                        ),
+                    )
+                    if (!guard) append("\n\n").append(getString(R.string.health_restricted_hint))
+                }
+                binding.healthAction.isVisible = true
+                binding.healthAction.setText(
+                    if (!guard) R.string.health_fix_guard else R.string.health_fix_overlay,
+                )
+                binding.healthAction.setOnClickListener {
+                    if (!guard) {
+                        Permissions.openAccessibilitySettings(this)
+                    } else {
+                        Permissions.requestOverlayPermission(this)
+                    }
+                }
+            }
+
+            outage != null && !settings.lastOutageSeen -> {
+                binding.healthBanner.isVisible = true
+                binding.healthTitle.setText(R.string.health_outage_title)
+                binding.healthDetail.text = describeOutage(outage)
+                binding.healthAction.isVisible = true
+                binding.healthAction.setText(R.string.health_outage_dismiss)
+                binding.healthAction.setOnClickListener {
+                    settings.lastOutageSeen = true
+                    renderHealth()
+                }
+            }
+
+            else -> binding.healthBanner.isVisible = false
+        }
+    }
+
+    private fun describeOutage(outage: Outage): String {
+        val zone = ZoneId.systemDefault()
+        val from: ZonedDateTime = outage.from.atZone(zone)
+        val to: ZonedDateTime = outage.to.atZone(zone)
+
+        val missed = OutageImpact.restrictedTimeMissed(
+            from.toLocalDateTime(),
+            to.toLocalDateTime(),
+            settings.schedule,
+        )
+
+        val headline = getString(
+            R.string.health_outage,
+            from.format(OUTAGE_FORMAT),
+            to.format(OUTAGE_FORMAT),
+            formatRemaining(outage.duration),
+        )
+        val cost = if (missed.isZero) {
+            getString(R.string.health_outage_harmless)
+        } else {
+            getString(R.string.health_outage_cost, formatRemaining(missed))
+        }
+        return "$headline\n\n$cost"
+    }
+
     private fun renderStatus(status: NightStatus) {
         binding.endBorrowedTime.isVisible = status.isBorrowingTime
+
+        // A schedule the app cannot enforce is not a status worth stating plainly.
+        if (settings.enabled && !Permissions.isOperational(this)) {
+            binding.statusHeadline.setText(R.string.health_not_running)
+            binding.statusDetail.setText(R.string.health_status_off)
+            binding.statusTimeline.isVisible = false
+            return
+        }
 
         if (status.scheduleOff) {
             binding.statusHeadline.setText(R.string.tonight_status_off)
@@ -547,6 +644,7 @@ class TonightActivity : AppCompatActivity() {
 
     private companion object {
         val TIME_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+        val OUTAGE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("EEE HH:mm")
         val HISTORY_FORMAT: DateTimeFormatter =
             DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
         val LEAD_CYCLE = listOf(0, 15, 30, 45, 60, 90, 120)
